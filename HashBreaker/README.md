@@ -1,4 +1,4 @@
-##### Purpose
+### Purpose
 Takes a file with line-separated [username, hashOfUserPassword] (or [username, userSalt, hashOfUserPasswordAndSalt]) entries and discovers the password corresponding to each entry.
 
 The method of password guessing can be Random or Sequential.
@@ -16,19 +16,21 @@ More specifics/documentation about the requirements of the password file's forma
 
 The "HashBreaker_concise.py" file is the exact same as the "HashBreaker.py" file,
 EXCEPT that the former file has both fewer debugging capabilities, and the file's remaining debug statements are commented out. There may be slightly fewer intermediate variables in the former file as well.
-
-
-### To run
-##### Requirements
+  
+  
+## To run
+### Requirements
 Must already have Python3 for **Windows** installed, which can be acquired at https://www.python.org/downloads/. Pycryptodome may have extra Python version requirements that are not stated here. This has been tested on Microsoft Windows 10 Home.
 
-##### Conflicts
+### Conflicts
 If both Python 2 and Python 3 are present on your system, Python 3 must have a higher priority in your system PATH. In worst case where everything else has been double checked, completely remove Python 2 from your system PATH.
 
 Please note that there are packages with similar names to Pycryptodome. They are likely to have issues but the library imports may work with the program's "import Crypto" statements. Do not use the libraries that sound similar or related; use Pycryptodome. An exception MIGHT be Pycryptodomex - I have not fully tested it.
 
-##### Execution
-* Open Windows Command Prompt by pressing Windows Key on keyboard, typing `cmd`, then pressing the Enter key on keyboard.
+### Execution
+* Open Windows File Explorer, navigate to HashBreaker folder (by default, it's in the Downloads folder, but I recommend you move it elsewhere), enter the folder. If you just copied individual files instead of the folder, just go to the folder where ALL the files in this repository are stored, then enter that folder.
+
+* Open Windows Command Prompt (not powershell) by clicking on the address bar at the top (which shows the location of the file), typing `cmd`, then pressing the Enter key on keyboard. The command prompt is now looking at the same files you were looking at in File Explorer.
 
 `py -m venv virtEnv`
 * This creates a Python virtual environment, where libraries installed to the virtual environment don't conflict with any other program's libraries (only once the environment is activated).
