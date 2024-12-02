@@ -1,0 +1,152 @@
+# Apparently 10E9 is not 10 to the 9th power, it's 10*[10 to the 9th power].
+# 1E9 = 1*[10 to the 9th power].
+# This made my timings confusingly inaccurate before that realization. Everything below has the correct times.
+
+# All of the below results were done by executing "HashBreaker_concise.py"
+
+"""
+Note: Passwords that are two characters or shorter are solved in a bit less than half a second.
+For USE_SALT=True:
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 526.5038
+> Avg time (seconds) to break each password: 75.2148
+Elapsed time for main(): 528.5213 seconds
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 519.9256
+> Avg time (seconds) to break each password: 74.2751
+Elapsed time for main(): 522.0940 seconds
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 514.0461
+> Avg time (seconds) to break each password: 73.4352
+Elapsed time for main(): 515.9568 seconds
+"""
+
+"""
+Note: Passwords that are two characters or shorter are solved in a bit less than half a second.
+For USE_SALT=False:
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 88.3970
+> Avg time (seconds) to break each password: 12.6281
+Elapsed time for main(): 88.6488 seconds
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 93.4862
+> Avg time (seconds) to break each password: 13.3552
+Elapsed time for main(): 93.7637 seconds
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 92.1564
+> Avg time (seconds) to break each password: 13.1652
+Elapsed time for main(): 92.4226 seconds
+"""
+
+"""
+Example output from USE_HEX_SALT=True:
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            0
+> User's salt:                    7F7f
+> Full hash of randomlyGuessedPw: be90a88fc27d1ae26fc9434cede0548dbd557ffbd093ad748d2e551868d11663
+> User's full hash:               be90a88fc27d1ae26fc9434cede0548dbd557ffbd093ad748d2e551868d11663
+> User:                           username10
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 0.0080 seconds
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            1
+> User's salt:                    00
+> Full hash of randomlyGuessedPw: e79e418e48623569d75e2a7b09ae88ed9b77b126a445b9ff9dc6989a08efa079
+> User's full hash:               e79e418e48623569d75e2a7b09ae88ed9b77b126a445b9ff9dc6989a08efa079
+> User:                           username200
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 0.0203 seconds
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            2
+> User's salt:                    12
+> Full hash of randomlyGuessedPw: ed4253cc34b91e95debe5ca6c97d434dcefed2e9ce8402b1874286aabbc40e5d
+> User's full hash:               ed4253cc34b91e95debe5ca6c97d434dcefed2e9ce8402b1874286aabbc40e5d
+> User:                           username4
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 0.0340 seconds
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            d4
+> User's salt:                    4e69636553616c7421
+> Full hash of randomlyGuessedPw: e4be1c4ae0179d489ad85eeaeba402d675200b06338e1ebd29deb5973cb33d99
+> User's full hash:               e4be1c4ae0179d489ad85eeaeba402d675200b06338e1ebd29deb5973cb33d99
+> User:                           username3000
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 0.1435 seconds
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            **
+> User's salt:                    030405060708090A0B0C0D0E0F
+> Full hash of randomlyGuessedPw: c91ec44ec1959bd6f6bc2f996b2cc531fba72ec6544379107edd9c4d3d945209
+> User's full hash:               c91ec44ec1959bd6f6bc2f996b2cc531fba72ec6544379107edd9c4d3d945209
+> User:                           username50000
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 0.3050 seconds
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            tri
+> User's salt:                    030405060708090A0B0C0D0E0F
+> Full hash of randomlyGuessedPw: e927d3feb001beec148981d043322423627aa5deb6f015ad1bbfb0301a816362
+> User's full hash:               e927d3feb001beec148981d043322423627aa5deb6f015ad1bbfb0301a816362
+> User:                           username600000
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 8.7680 seconds
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+Found brand new match:
+> Randomly guessed pw:            myPw
+> User's salt:                    1234567809
+> Full hash of randomlyGuessedPw: 128cb981e258ff9f60153122ab5a7a3c0901b7cfb53c259c28055d16b7929a61
+> User's full hash:               128cb981e258ff9f60153122ab5a7a3c0901b7cfb53c259c28055d16b7929a61
+> User:                           username700000
+!!!!!!!!!!!!!!!!!!!!!!!!
+Discovered after 530.5556 seconds
+
+totalNumTrials for 7 collisions (pws): 7397345
+> avgNumTrials: 1056763.5714
+Total time (seconds) to break all 7 passwords: 530.5556
+> Avg time (seconds) to break each password: 75.7937
+
+Successfully Broken Passwords:
+Format: ['username', 'password', 'salt', 'hash']
+> ['username10', '0', '7F7f', '7267b54c0af471df0c9360c0da086f50df7d1e5d8bfd253c0659e82369e38586']
+> ['username200', '1', '0', '4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5']
+> ['username4', '2', '12', 'fa2b7af0a811b9acde602aacb78e3638e8506dfead5fe6c3425b10b526f94bdd']
+> ['username3000', 'd4', '4e69636553616c7421', 'c9ec37c1fb09da26327de44efcbca6389f7f05f047d9ac87afc53b80c055dd40']
+> ['username50000', '**', 'NiceSalt!', '922a37e7817fffd788e7e433584001a16d464ce96f21d270bded11e265f8d0ca']
+> ['username600000', 'tri', 'NiceSalt!', '39d7c88e7fef1ae51ded3938560dcb2e589bb3b63f789f52ae904d4c0f94e48d']
+> ['username700000', 'myPw', '123456789', 'dccb55acddfb58b2c534a3ca25bdc6598918c4caace65808bf23c35b7599b5fa']
+Elapsed time for main(): 532.4122 seconds
+"""
+
+# What else I noticed
+#
+# Finding password "tri":
+# > Unsalted: 1.6 to 1.8 seconds
+# > Salted: 7.4 to 9.0 seconds
+# > HexSalted: 8.7 to 9.1 seconds
+#
+# Finding password "myPw":
+# > Unsalted: 87 to 96 seconds
+# > Salted: 465 to 526 seconds
+# > HexSalted: 530 to 627 seconds
