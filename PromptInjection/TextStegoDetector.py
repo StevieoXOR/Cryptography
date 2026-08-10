@@ -623,6 +623,18 @@ ADVANCED_PAIRS_PHONETIC: list[tuple[str, set[str]]] = [
     ('k',    {'ck', 'c', 'k'}),             # truk  -> truck,  kritical -> critical
     ('cc',   {'ck', 'c', 'k', 'cc'}),       # trucc -> truck, ccritical -> critical, jaccced -> jacked
     ('kk',   {'ck', 'c', 'k', 'kk'}),       # trukk -> truck, kkritical -> critical, jackked -> jacked
+    ('aye',  {'a', 'i'}), 
+    ('ai',   {'i'}), 
+    ('eye',  {'i'}),
+    ('ey3',  {'i'}),       # This rule is unnecessary IFF you add rule-to-rule substitution
+    ('3y3',  {'i'}), 
+    ('sea',  {'c'}),        # Say the soft letter "c" out loud
+    ('gee',  {'g'}),        # Say the soft letter "g" out loud
+    ('aych', {'h'}),
+    ('es',   {'s'}), 
+    ('ehs',  {'s'}), 
+    ('ex',   {'x'}),
+    ('ecks', {'x'}), 
     ('ee',   {'ee', 'y'}),              # dizzee -> dizzy
     ('y',    {'ee', 'y'}),              # 
     ('oo',   {'oo', 'ew', 'ue'}),       # floo -> flew
@@ -634,6 +646,7 @@ ADVANCED_PAIRS_PHONETIC: list[tuple[str, set[str]]] = [
     ('oh',   {'or', 'o', 'h', 'oh'}),   # fohget  -> forget
     ('xor',  {'cker', 'ckor', 'xor'}), 
     ('xxor', {'cker', 'ckor', 'xor'}), 
+    ('cue',  {'q'}),
 ]
 ADVANCED_PAIRS_PHONETIC = [(toFind, toReplaceWith, 'Phonetic Leet')   for (toFind, toReplaceWith) in ADVANCED_PAIRS_PHONETIC]
 
@@ -642,7 +655,6 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('^',    {'a'}), 
     ('Д',    {'a', 'd'}),   # Russian letter "d"
     ('Λ',    {'a'}), 
-    ('aye',  {'a', 'i'}), 
     ('ci',   {'a', 'd'}),    # Squint.
     ('ß',    {'b', 's'}), 
     ('!3',   {'b'}), 
@@ -663,13 +675,14 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('©',    {'c'}), 
     ('ㄈ',    {'c', 'v', 'u'}), 
     ('(c)',  {'c'}), 
-    ('sea',  {'c'}),        # Say the soft letter "c" out loud
     (')',    {'d', 'j'}),   # curve of "j"
     ('>',    {'d', 'g'}),   # backward rounded part of "d", "g"reater than
     ('Đ',    {'d'}), 
     ('ð',    {'d', 'o'}),
-    ('&',    {'e', 'a', 'g'}), # "a"nd/"a"mpersand/"a"nkh
-    ('£',    {'l', 'e'}), 
+    ('&',    {'e', 'a', 'g', 'and', 'amp'}), # "a"nd/"a"mpersand/"a"nkh
+    ('&&',   {'and'})
+    ('||',   {'or'})
+    ('£',    {'e', 'l'}), 
     ('€',    {'e'}), 
     ('ë',    {'e'}), 
     ('ヨ',    {'e'}),
@@ -679,26 +692,20 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     (']=',   {'f', 't'}), 
     ('(=',   {'f', 't'}), 
     ('I=',   {'f', 't'}),   # Rotated T
-    ('cj',   {'g'}), 
-    ('gee',  {'g'}),    # Say the soft letter "g" out loud
-    ('#',    {'h', 'l', 'o'}), 
-    ('aych', {'h'}),
-    ('|',    {'i', 'l'}), 
+    ('cj',   {'g', 'ck'}),  # Squint to get "g", Hacjer -> Hacker
+    ('#',    {'h', 'l', 'o', 'hash', 'pound', 'octo', 'number'}), 
+    ('|',    {'i', 'l', 'pipe', 'or'}), 
     ('¡',    {'i', 'l'}), 
     ('/',    {'i', 'l'}), 
     ('\\',   {'i', 'l'}), 
     ('][',   {'i', 'h'}),      # I, rotated H
     (':',    {'i', 'l', 't'}), # "dot your i's and cross your t's"
-    ('eye',  {'i'}),
-    ('ey3',  {'i'}),       # This rule is unnecessary IFF you add rule-to-rule substitution
-    ('3y3',  {'i'}), 
     ('エ',    {'i', 'h'}), # I, rotated H
-    ('ai',   {'i'}), 
     (']',    {'i', 'l', 't'}),
     ('¿',    {'j', '?'}),
     ('X',    {'k'}),          # WHY WAS THIS ADDED? UPPERCASE SHOULDN'T BE ABLE TO EXIST
-    ('ㄥ',    {'l', 'v', 'u'}), # "l"ess than, 
-    ('1_',   {'l'}), 
+    ('ㄥ',    {'l', 'v', 'u', 'angle'}), # "l"ess than, rotated V, Grecian U, mathematical angle symbol
+    ('1_',   {'l'}),    # L
     ('~',    {'l'}),
     ('nn',   {'m'}), 
     ('11',   {'m', 'n'}), 
@@ -711,25 +718,22 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('ö',    {'o'}), 
     ('*',    {'o', 'x', 'y'}), 
     ('oh',   {'o'}), 
-    ('Ø',    {'o', 'i', 'l'}), # Center line is "i"|"l"
-    ('ㄖ',    {'o'}), 
+    ('Ø',    {'o', 'i', 'l', '|', '/'}), # Center line is "i"|"l"
+    ('ㄖ',    {'o', '\\'}), 
     ('¤',    {'o', 'x'}), 
     ('O',    {'o'}),
     ('⁋',    {'p', 'q', 'i', 'l'}), 
     ('₽',    {'p'}), 
     ('ㄗ',    {'p'}), 
-    ('þ',    {'p', 'b'}), 
+    ('þ',    {'p', 'b'}), # Also kinda looks like a rotated snail, a physical key, half of an insect wing, a musical "flat" accidental
     ('¶',    {'p', 'q', 'g'}),
     ('℗',    {'q'}), 
-    ('cue',  {'q'}),
     ('®',    {'r'}), 
     ('Я',    {'r'}), 
     ('(r)',  {'r'}),
     ('§',    {'s'}), 
     ('š',    {'s'}), 
     ('z',    {'s', 'z'}), 
-    ('es',   {'s'}), 
-    ('ehs',  {'s'}), 
     ('ㄎ',    {'s'}), 
     ('ខ',    {'s', 'g'}), 
     ('ez',   {'s'}),
@@ -751,10 +755,8 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('2v',   {'w'}),
     ('%',    {'x', 'z'}), 
     ('×',    {'x'}), 
-    ('ecks', {'x'}), 
     ('ㄨ',    {'x'}), 
     ('χ',    {'x'}), 
-    ('ex',   {'x'}),
     ('¥',    {'y'}), 
     ('j',    {'y'}), 
     ('ㄚ',    {'y'}), 
@@ -917,12 +919,15 @@ ULTIMATE_PAIRS: list[tuple[str, set[str], str]] = [
     ('[_]',    {'u'}, 'Ultimate Ascii-Art'), 
     ('L|',     {'u'}, 'Ultimate Ascii-Art'), 
     ('Y3W',    {'u'}, 'Ultimate Ascii-Art'), 
-    ('\\_/',   {'u'}, 'Ultimate Ascii-Art'), 
-    ('\\_\\',  {'u'}, 'Ultimate Ascii-Art'), 
+    ('y3w',    {'u'}, 'Ultimate Ascii-Art'), 
+    ('y3W',    {'u'}, 'Ultimate Ascii-Art'), 
+    ('Y3w',    {'u'}, 'Ultimate Ascii-Art'), 
+    ('\\_/',   {'u'}, 'Ultimate Ascii-Art'),    # \_/
+    ('\\_\\',  {'u'}, 'Ultimate Ascii-Art'),    # \_\
     ('/_/',    {'u'}, 'Ultimate Ascii-Art'),
-    ('\\/',    {'v'}, 'Ultimate Ascii-Art'), 
+    ('\\/',    {'v'}, 'Ultimate Ascii-Art'),    # \/
     ('|/',     {'v'}, 'Ultimate Ascii-Art'), 
-    ('\\|',    {'v'}, 'Ultimate Ascii-Art'), 
+    ('\\|',    {'v'}, 'Ultimate Ascii-Art'),    # \|
     ('\\\\//', {'v'}, 'Ultimate Ascii-Art'),    # \\//
     ('\\|/',   {'w', 'y'}, 'Ultimate Ascii-Art'), # \|/
     ('\\_:_/', {'w'}, 'Ultimate Ascii-Art'),    # \_:_/
