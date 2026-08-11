@@ -48,7 +48,7 @@ from pprint import pprint
 
 class NonHumanReadableEncodings():
     # TODO
-    # Bitstring (4-bit, 8-bit, 16-bit, 32-bit, 64-bit increments), Hex, BCD, ASN.1
+    # Bitstring (4-bit, 8-bit, 16-bit, 32-bit, 64-bit increments), Hex, BCD, ASN.1, Unicode
     # Rail Fence Cipher, Polybius Square Cipher, Caesar & Vigenere Ciphers, Cetacean Cipher...
     """
     Example capabilities of CyberChef (Full list is at gchq/CyberChef/src/core/config/Categories.json in GitHub):
@@ -311,6 +311,23 @@ def test_reverse_tokens():
 
 
 
+
+
+# vertical_bar_equiv_class
+alpha_exactlyVert = {'i', 'l'}
+alpha_mostlyVert  = {'t'}
+all_alphaVert   = alpha_exactlyVert | alpha_mostlyVert
+
+bracket_vert = {'[', ']', '(', ')', '{', '}', '⌈', '⌉', '⌊', '⌋'}   # last 4 are unicode math: leftCeil, rightCeil, leftFloor, rightFloor
+
+exactly_vert = alpha_exactlyVert | {'1', '!', '¡', '|' ':', ';'}       # Exclamation point & Upside down variant (Spanish)
+mostly_vert  = alpha_mostlyVert | {'\\', '/'} | bracket_vert
+
+from_vertAll = exactly_vert | mostly_vert   # Enciphered/encoded version
+to_vertAll = all_alphaVert | {'1', '|'}        # Intended to be interpreted as plaintext/decoded
+
+
+
 # =========================================================================
 # MIRROR UTILITY (Handles non/reversed Leet strings)
 # =========================================================================
@@ -360,8 +377,8 @@ def mirror_tokens(pairs: list[tuple[str, set[str], str]], do_reverse_multichar_s
     # pbqd_equiv_class = {'b', 'p', 'q', 'd'}   # set(), not dict()
 
     quotes_equiv_class = {'\'',  '\"',  '`'}    # ` ' " # THIS SHOULD BE ONLY DIRECTED QUOTES, WHICH NONE OF THESE ARE. FIXME TODO
-    dash_equiv_class = {'-',  '='}
-    vertical_bar_equiv_class = {'1', 'l', '|', '\\', '/', ':', ';'}
+    dash_equiv_class   = {'-',  '='}
+    vertical_bar_equiv_class = to_vertAll
 
 
     extended_pairs = []
@@ -570,8 +587,9 @@ def test_MirrorReverseTokens(allowPartialMirroring:bool = True, printOneTokenPer
         print(f"Desired: {outputsWithAndWoutMirror[0][0][1]}")
         for (testInput_tuple3, result) in outputsWithAndWoutMirror:
             for token, plains, categ, transforms_used in result:
-                print(f"  Token: {("\'"+token+"\'"):<10}")
-                # print(f"  Token: {("\'"+token+"\'"):<10} | Category: {categ}")
+                if printOneTokenPerLine:
+                    print(f"  Token: {("\'"+token+"\'"):<10}")
+                    # print(f"  Token: {("\'"+token+"\'"):<10} | Category: {categ}")
                 outputTokens.append(token)
                 if printTransformations:
                     print("  ", end="")
@@ -579,9 +597,9 @@ def test_MirrorReverseTokens(allowPartialMirroring:bool = True, printOneTokenPer
                     print()
         print("plains:", plains)
         desiredOutput = list(plains)[0]   # set -> list -> 0th item in list
-        print(f"{desiredOutput} was {"" if (desiredOutput in set(outputTokens)) else "not "}in {set(outputTokens)}")
+        print(f"\"{desiredOutput}\" was {"" if (desiredOutput in set(outputTokens)) else "not "}in {set(outputTokens)}")
         print()
-test_MirrorReverseTokens(allowPartialMirroring=True, printOneTokenPerLine=False, printTransformations=False)
+# test_MirrorReverseTokens(allowPartialMirroring=True, printOneTokenPerLine=False, printTransformations=False)
 
 
 
@@ -604,21 +622,21 @@ BASIC_PAIRS: list[tuple[str, set[str], str]] = [
     ('3',    {'e'},        'Basic Leet'),      
     ('6',    {'g', 'p', 'q'}, 'Basic Leet'),       
     ('9',    {'g', 'p', 'q'}, 'Basic Leet'),       
-    ('!',    {'i', 'l', 't'}, 'Basic Leet'),  
-    ('1',    {'i', 'l', 't'}, 'Basic Leet'),  
+    ('!',    all_alphaVert,       'Basic Leet'),  
+    ('1',    all_alphaVert,       'Basic Leet'),  
     ('0',    {'o', 'q'},   'Basic Leet'),       
     ('5',    {'s'},        'Basic Leet'),      
-    ('$',    {'s','i','l'},'Basic Leet'),           # Focus on the background to get s. Focus on the middle line to get i or l.
-    ('7',    {'t', 'z', 'l'}, 'Basic Leet'),  
-    ('2',    {'z', 'r', 'to', 'too'}, 'Basic Leet'),
+    ('$',    {'s'} | alpha_exactlyVert,  'Basic Leet'), # Focus on the background to get s. Focus on the middle line to get i or l.
+    ('7',    {'z', 't', 'l'},            'Basic Leet'), # Upside down & rotated "L"
+    ('2',    {'z', 'r', 'to', 'too'},    'Basic Leet'),
 ]
 
 ADVANCED_PAIRS_PHONETIC: list[tuple[str, set[str]]] = [
     ('r',    {'re', 'r'}),         # cor -> core
     ('f',    {'f','ph'}),          # fone    -> phone
-    ('ph',   {'f','ph'}),          # phorget -> forget
+    ('ph',   {'f','ph'}),          # phorget -> forget, phew -> few
     ('mt',   {'mpt','mt'}),        # promt -> prompt
-    ('ch',   {'ck', 'ch'}),        # chuch -> chuck
+    ('ch',   {'ck', 'ch'}),        # hacher -> hacker
     ('c',    {'ck', 'c', 'k', 's', 'z'}),   # truc  -> truck, cill -> kill, clide -> slide, chut off -> shut off, cip file -> zip file
     ('k',    {'ck', 'c', 'k'}),             # truk  -> truck,  kritical -> critical
     ('cc',   {'ck', 'c', 'k', 'cc'}),       # trucc -> truck, ccritical -> critical, jaccced -> jacked
@@ -628,15 +646,17 @@ ADVANCED_PAIRS_PHONETIC: list[tuple[str, set[str]]] = [
     ('eye',  {'i'}),
     ('ey3',  {'i'}),       # This rule is unnecessary IFF you add rule-to-rule substitution
     ('3y3',  {'i'}), 
+    ('in\'', {'ing'}),      # Deletin' -> Deleting
     ('sea',  {'c'}),        # Say the soft letter "c" out loud
     ('gee',  {'g'}),        # Say the soft letter "g" out loud
     ('aych', {'h'}),
     ('es',   {'s'}), 
     ('ehs',  {'s'}), 
+    ('ez',   {'s'}),
     ('ex',   {'x'}),
     ('ecks', {'x'}), 
     ('ee',   {'ee', 'y'}),              # dizzee -> dizzy
-    ('y',    {'ee', 'y'}),              # 
+    ('y',    {'ee', 'y'}),              # creepee -> creepy
     ('oo',   {'oo', 'ew', 'ue'}),       # floo -> flew
     ('ew',   {'oo', 'ew', 'ue'}),       # rewt -> root, crewk -> crook
     ('ue',   {'oo', 'ew', 'ue'}),       # flue -> flew, shuet -> shoot
@@ -644,6 +664,7 @@ ADVANCED_PAIRS_PHONETIC: list[tuple[str, set[str]]] = [
     ('ah',   {'e',  'a', 'h', 'ah'}),   # hahcker -> hacker
     ('eh',   {'e',  'a', 'h', 'eh'}),   # forgeht -> forget, hehcker -> hacker
     ('oh',   {'or', 'o', 'h', 'oh'}),   # fohget  -> forget
+    ('oe',   {'or', 'o', 'h', 'oh', 'ow', 'oe'}),   # foeget  -> forget, tomorroe -> tomorrow
     ('xor',  {'cker', 'ckor', 'xor'}), 
     ('xxor', {'cker', 'ckor', 'xor'}), 
     ('cue',  {'q'}),
@@ -680,8 +701,8 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('Đ',    {'d'}), 
     ('ð',    {'d', 'o'}),
     ('&',    {'e', 'a', 'g', 'and', 'amp'}), # "a"nd/"a"mpersand/"a"nkh
-    ('&&',   {'and'})
-    ('||',   {'or'})
+    ('&&',   {'and'}),
+    ('||',   {'or'}),
     ('£',    {'e', 'l'}), 
     ('€',    {'e'}), 
     ('ë',    {'e'}), 
@@ -693,15 +714,15 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('(=',   {'f', 't'}), 
     ('I=',   {'f', 't'}),   # Rotated T
     ('cj',   {'g', 'ck'}),  # Squint to get "g", Hacjer -> Hacker
-    ('#',    {'h', 'l', 'o', 'hash', 'pound', 'octo', 'number'}), 
-    ('|',    {'i', 'l', 'pipe', 'or'}), 
+    ('#',    {'h', 'l', 'o', 'hash', 'tag', 'pound', 'octo', '8', 'number', 'sharp', 'tictactoe'}), # "hash""tag", "octo"thorpe ("8 points"), musical sharp, tictactoe board shape
+    ('|',    alpha_exactlyVert | {'pipe', 'or'}), 
     ('¡',    {'i', 'l'}), 
     ('/',    {'i', 'l'}), 
     ('\\',   {'i', 'l'}), 
     ('][',   {'i', 'h'}),      # I, rotated H
-    (':',    {'i', 'l', 't'}), # "dot your i's and cross your t's"
+    (':',    all_alphaVert), # "dot your i's and cross your t's"
     ('エ',    {'i', 'h'}), # I, rotated H
-    (']',    {'i', 'l', 't'}),
+    (']',    all_alphaVert),
     ('¿',    {'j', '?'}),
     ('X',    {'k'}),          # WHY WAS THIS ADDED? UPPERCASE SHOULDN'T BE ABLE TO EXIST
     ('ㄥ',    {'l', 'v', 'u', 'angle'}), # "l"ess than, rotated V, Grecian U, mathematical angle symbol
@@ -735,8 +756,7 @@ ADVANCED_PAIRS_SYMBOLS: list[tuple[str, set[str]]] = [
     ('š',    {'s'}), 
     ('z',    {'s', 'z'}), 
     ('ㄎ',    {'s'}), 
-    ('ខ',    {'s', 'g'}), 
-    ('ez',   {'s'}),
+    ('ខ',    {'s', 'g', 'o'}), 
     ('+',    {'t'}), 
     ('†',    {'t'}), 
     ('ㄒ',    {'t'}),
@@ -999,7 +1019,7 @@ WORD_PAIRS_LEET = [(tup2[0], tup2[1], 'Word Leet')   for tup2 in WORD_PAIRS_LEET
 WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('tfw',    {'that feeling when'}), 
     ('iykyk',  {'if you know you know'}), 
-    ('smol',   {'small', 'adorable'}), 
+    ('smol',   {'small', 'adorable', 'cute'}), 
     ('cheugy', {'outdated', 'uncool'}),
     ('woke',   {'aware', 'informed'}), 
     ('bop',    {'good song'}), 
@@ -1041,6 +1061,7 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('y?',     {'why?'}),
     ('jk',     {'just kidding'}),
     ('j/k',    {'just kidding'}),
+    ('ez',     {'easy'}),
     ('sez',    {'says'}),
     ('ses',    {'says'}),
     ('sry',    {'sorry'}),
@@ -1055,7 +1076,7 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('cta',    {'call to action'}),
     ('roi',    {'return on investment'}),
     ('usp',    {'unique selling proposition'}),
-    ('crm',    {'customer relationship management'}),
+    ('crm',    {'customer relationship management', 'cream'}),
     ('kpi',    {'key performance indicator'}),
     ('faq',    {'frequently asked questions'}),
     ('eta',    {'estimated time of arrival'}),
@@ -1115,17 +1136,21 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('cob',    {'close of business'}),
     ('dftt',   {'don\'t feed the trolls'}),
     ('dftba',  {'don\'t forget to be awesome'}),
+    ('dfwm',   {'don\'t fuck with me'}),
     ('dgaf',   {'don\'t give a fuck'}),
     ('diaf',   {'die in a fire'}),
     ('dilligaf', {'does it look like i give a fuck'}),
     ('d/l',    {'download'}),
     ('dl',     {'download'}),
-    ('dnd',    {'do not disturb'}),
+    ('dnd',    {'do not disturb', 'Dungeons and Dragons'}),
     ('doa',    {'dead on arrival'}),
+    ('eg',     {'for example'}),
     ('ianal',  {'i am not a lawyer'}),
     ('ibtl',   {'in before the lock'}),
     ('idgaf',  {'i don\'t give a fuck'}),
     ('ig',     {'i guess', 'instagram'}),
+    ('insta',  {'instagram'}),
+    ('ie',     {'that is'}),   # i.e., == id est == "that is, ..." == "in other words, ..."
     ('iht',    {'i had to'}),
     ('iirc',   {'if i recall correctly', 'if i remember correctly'}),
     ('iiuc',   {'if i understand correctly'}),
@@ -1146,13 +1171,13 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('jfgi',   {'just fucking google it'}),
     ('jftr',   {'just for the record'}),
     ('jtlyk',  {'just to let you know'}),
-    ('kiss',   {'keep it simple stupid'}),
+    ('kiss',   {'keep it simple stupid', 'kiss'}),  # Preserve original string
     ('kms',    {'kill myself'}),
     ('kos',    {'kill on sight'}),
     ('kthx',   {'ok, thanks'}),
     ('kthxbye',{'ok, thanks, goodbye'}),
     ('kys',    {'kill yourself'}),
-    ('lfg',    {'looking for group'}),
+    ('lfg',    {'looking for group', 'let\'s fucking go'}),
     ('lfm',    {'looking for more'}),
     ('lmao',   {'laughing my ass off', 'laughing my arse off'}),
     ('lmbo',   {'laughing my butt off'}),
@@ -1162,12 +1187,14 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('lmgtfy', {'let me google that for you', 'let me get that for you'}),
     ('lmirl',  {'let\'s meet in real life'}),
     ('ltns',   {'long time no see'}),
+    ('lolz',   {'lol'}),
     ('lulz',   {'lol'}),
     ('lylab',  {'love you like a brother'}),
     ('lylas',  {'love you like a sister'}),
     ('ns',     {'nice shot'}),
     ('nsoh',   {'no sense of humor'}),
     ('nsfw',   {'not safe for work'}),
+    ('nvm',    {'nevermind'}),
     ('nvmd',   {'nevermind'}),
     ('nm',     {'nevermind', 'not much', 'nothing much'}),
     ('qft',    {'quoted for truthiness'}),
@@ -1175,10 +1202,12 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('u',      {'you'}),
     ('utfse',  {'use the fucking search engine'}),
     ('ugo',    {'you got owned'}),
+    ('uggo',   {'ugly person'}),
     ('urs',    {'you really suck'}),
     # ('b',      {'bisexual', 'babe'}), # Commented out because of how rare (and typically False-Positive/useless) this transformation/substitution is
-    ('based',  {'agreed'}),
-    ('bet',    {'yes', 'okay'}),
+    ('based',  {'agreed', 'truthful'}),
+    ('real',  {'agreed', 'truthful', 'real'}),  # Self-preserved term
+    ('bet',    {'yes', 'okay', 'sounds good to me'}),
     ('cba',    {'can\'t be arsed'}),
     ('cmb',    {'call me back'}),
     ('cmon',   {'come on'}),
@@ -1195,6 +1224,7 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('dm',     {'direct message'}),
     ('dnt',    {'don\'t'}),
     ('dtf',    {'down to fuck'}),
+    ('dym',    {'do you mean'}),
     ('dw',     {'don\'t worry'}),
     ('f',      {'female'}),
     ('fafo',   {'fuck around and find out'}),
@@ -1207,12 +1237,14 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('fuq',    {'fuck'}),
     ('fuqn',   {'fucking'}),
     ('fwb',    {'friends with benefits'}),
+    ('fwy',    {'fuck with you', 'friends with you', 'fucking with you'}),
     ('gg',     {'good game'}),
     ('gj',     {'good job'}),
     ('gl',     {'good luck'}),
     ('glhf',   {'good luck have fun'}),
-    ('goat',   {'greatest of all time'}),
+    ('goat',   {'greatest of all time', 'best'}),
     ('gnite',  {'good night'}),
+    ('congrats',{'congratulations'}),
     ('gratz',  {'congratulations'}),
     ('gtfoh',  {'get the fuck outta here'}),
     ('gtg',    {'got to go'}),
@@ -1228,8 +1260,8 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('idc',    {'i don\'t care'}),
     ('ik',     {'i know'}),
     ('ikr',    {'i know right'}),
+    ('iam',    {'in a minute'}),
     ('im',     {'instant message'}),
-    ('insta',  {'instagram'}),
     ('iykyk',  {'if you know you know'}),
     ('n2m',    {'nothing too much', 'not too much'}),
     ('nbd',    {'no big deal'}),
@@ -1250,15 +1282,21 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('pmsl',   {'peeing myself laughing'}),
     ('pov',    {'point of view'}),
     ('ppl',    {'people'}),
+    ('prob',   {'probably', 'problem'}),
+    ('probs',  {'probably', 'problems'}),
     ('prolly', {'probably'}),
     ('pwn',    {'own', 'conquer', 'defeat'}),
     ('rtfm',   {'read the fucking manual'}),
     ('skl',    {'school'}),
     ('sksksk', {'laughter'}),
+    ('tststs', {'laughter'}),
+    ('tsktsktsk', {'disappointment'}),
     ('sms',    {'short message service'}),
     ('so',     {'significant other'}),
     ('sob',    {'son of a bitch'}),
+    ('sop',    {'standard operating procedure'}),
     ('sos',    {'help'}),
+    ('ser',    {'serious'}),
     ('srs',    {'serious'}),
     ('srsbsns',{'serious business'}),
     ('ss',     {'screenshot', 'speak soon', 'send secure'}),
@@ -1270,18 +1308,23 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('tc',     {'take care'}),
     ('tgif',   {'thank god it\'s friday'}),
     ('thanq',  {'thank you'}),
+    ('tmr',    {'tomorrow'}),
+    ('tmrw',   {'tomorrow'}),
     ('ttfn',   {'ta-ta for now'}),
     ('tweet',  {'twitter post'}),
     ('txt',    {'text'}),
     ('ty',     {'thank you'}),
-    ('vm',     {'voicemail'}),
+    ('vm',     {'voicemail', 'very much'}),
     ('w',      {'win'}),
     ('w@',     {'what'}),
     ('w/',     {'with'}),
     ('w/e',    {'whatever', 'weekend'}),
     ('w/o',    {'without'}),
+    ('w/&w/o', {'with and without'}),
     ('w8',     {'wait'}),
     ('wag1',   {'what\'s up'}),
+    ('wdym',   {'what do you mean'}),
+    ('wdyfm',  {'what do you fucking mean', 'what the fuck do you mean'}),
     ('wk',     {'week'}),
     ('wrk',    {'work'}),
     ('wtf',    {'what the fuck'}),
@@ -1289,18 +1332,37 @@ WORD_PAIRS_SMS: list[tuple[str, set[str]]] = [
     ('wyd',    {'what are you doing'}),
     ('wysiwyg',{'what you see is what you get'}),
     ('whizzy wig',{'what you see is what you get'}),
-    ('x',      {'kiss', 'twitter', 'shut up', 'eliminate', 'remove', 'delete'}),
+    ('wizzy wig',{'what you see is what you get'}),
+    ('x',      {'kiss', 'twitter', 'shut up', 'eliminate', 'remove', 'delete', 'cross'}),
 ]
 # Add the category to each tuple
 WORD_PAIRS_SMS = [(toFind, toReplaceWith, 'SMS Slang')   for (toFind, toReplaceWith) in WORD_PAIRS_SMS]
 # WORD_PAIRS_SMS = [(tup2[0], tup2[1], 'SMS Slang')   for tup2 in WORD_PAIRS_SMS]
 
 WORD_PAIRS_CASUAL: list[tuple[str, set[str], str]] = [
-# Casual/Phonetic
+# Not quite SMS (too long - these are not minimal length) nor Leet. Moreso slang.
     ('no biggie', {'no big deal'},   'Casual'),      
+    ('bizniss', {'business'},        'Casual'),      
+    ('bizniz',  {'business'},        'Casual'),      
+    ('beach',  {'bitch', 'beach'},   'Casual'),      
+    ('beatch', {'bitch'},            'Casual'),      
+    ('beeatch',{'bitch'},            'Casual'),      
+    ('beeyatch',{'bitch'},           'Casual'),      
+    ('dafuk',  {'what the fuck'},    'Casual'),      
+    ('dafuq',  {'what the fuck'},    'Casual'),      
     ('dat',    {'that'},             'Casual'),      
+    ('deets',  {'details'},          'Casual'),      
+    ('ded',    {'dead'},             'Casual'),      
+    ('foo',    {'fool'},             'Casual'),      
+    ('fren',   {'friend'},           'Casual'),      
+    ('leetle', {'little'},           'Casual'),      
     ('teh',    {'the'},              'Casual'),       
     ('tht',    {'that'},             'Casual'),      
+    ('wudda',  {'what the', 'water'},'Casual'),      
+    ('wadda',  {'what the', 'water'},'Casual'),      
+    ('vadda',  {'what the', 'water'},'Casual'),      
+    ('whudda', {'what the'},         'Casual'),      
+    ('whadda', {'what the'},         'Casual'),      
     ('wut',    {'what'},             'Casual'),      
     ('w/out',  {'without'},          'Casual'),   
     ('ur',     {'your', 'you are'},  'Casual'),  
@@ -1308,9 +1370,22 @@ WORD_PAIRS_CASUAL: list[tuple[str, set[str], str]] = [
     ('rekt',   {'wrecked'},          'Casual'),   
     ('rekd',   {'wrecked'},          'Casual'),   
     ('seggs',  {'sex'},              'Casual'),
+    ('stronk', {'strong'},           'Casual'),
+    ('shur',   {'sure'},             'Casual'),
+    ('shore',  {'sure', 'shore'},    'Casual'),
+    ('fosho',  {'for sure'},         'Casual'),
+    ('sho',    {'sure', 'show'},     'Casual'),
+    ('fo',     {'for', 'foe'},       'Casual'),
+    ('min',    {'minute', 'minimum'},'Casual'),
+    ('nomo',   {'no more'},          'Casual'),
+    ('num',    {'number'},           'Casual'),
+    ('no',     {'number'},           'Casual'),
+    ('no.',    {'number'},           'Casual'),
     ('skool',  {'school'},           'Casual'),   
     ('unalive',{'kill', 'suicide'},  'Casual'),
     ('wikd',   {'wicked'},           'Casual'),
+    ('weewoo', {'police'},           'Casual'), # Sound of police sirens
+    ('whatchu',{'what are you'},     'Casual'),
 ]
 
 
@@ -1368,7 +1443,7 @@ if False:
 
 
 
-def calculate_string_closeness(s1:str, s2:str):
+def calculate_string_closeness(s1:str, s2:str, weights:tuple[float,float,float,float], doPrint:bool = False):
     """
     String-closeness/similarity function.
 
@@ -1382,27 +1457,143 @@ def calculate_string_closeness(s1:str, s2:str):
     assert s1 is not None
     assert s2 is not None
 
-    histograms = [{},{}] # string1's histogram, string2's histogram
-    for c in s1: histograms[0][c] += 1
-    for c in s2: histograms[1][c] += 1
+    histograms = [{},{}] # string1's histogram, string2's histogram (two dicts)
+    # E.g., Histogram of "Helloe!": {"H":1, "e":2, "l":2, "o":1, "!":1}
+    # for c in s1: histograms[0][c] += 1
+    # for c in s2: histograms[1][c] += 1    # KeyError: 'H'   "+=" does NOT initialize that element into the dict.
+    #                                                         You need defaultdict(int) (or what's below) to fix that.
+    for c in s1: histograms[0][c] = histograms[0].get(c,0) + 1
+    for c in s2: histograms[1][c] = histograms[1].get(c,0) + 1
 
-    # TODO: Add histogram comparison functionality
+    # Histogram comparison
+    def CompareHistToHistDistance(hist1: dict, hist2: dict) -> float:
+        """
+        L2 loss (sum of squared differences, AKA MSE/MeanSquaredError) between two sparse count histograms.
+        Neither input dict is mutated nor padded with missing keys.
 
-    numIdenticalCharsAtIdenticalPositions = 0
-    lenLongestStr = max(len(s1), len(s2))
-    if (len(s1) > len(s2)):
-        for i in range(len(s1)):
-            if len(s2)>i:
-                numIdenticalCharsAtIdenticalPositions += (1 if s1[i]==s2[i] else 0)
-            else: break
+        Use each term's (distanceOrDifference squared) as a penalty, like L2 Loss in Machine Learning
+        'c': 5, 'c': 0 -> (5-0)^2 = 25 distance == far
+        'f': 4, 'f': 6 -> (4-6)^2 =  4 distance == close/similar
+        """
+        all_keys  = set(hist1.keys()) | set(hist2.keys())  # UNION, not intersection. Get all keys among all histograms
+        loss_val = sum((hist1.get(k, 0) - hist2.get(k, 0)) ** 2 for k in all_keys)  # sum( square(hist1['c'] - hist2['c']) )
+
+        """ Calculate the total number of characters in the two histograms combined
+        {"H":1, "e":1}, {"H":5, "!":2} -> {"H":6, "e":1, "!":2} -> 6,1,2 -> 9"""
+        combined_hist = {}
+        for hist in [hist1.items(), hist2.items()]: # item == tuple(key,value)
+            for (key,val) in hist:
+                combined_hist[key] = combined_hist.get(key,0) + val
+        numCharsAmongBothHists = sum(combined_hist.values())
+
+        return {"proportional_summedMSE_val": loss_val/numCharsAmongBothHists, "raw_summedMSE_val": loss_val, "histogram_s1": hist1, "histogram_s2": hist2}
+
+    def CompareCharsAtIdenticalPositions(s1:str, s2:str) -> float:
+        numIdenticalCharsAtIdenticalPositions = 0
+        lenLongestStr = max(len(s1), len(s2))
+        if (len(s1) > len(s2)):
+            for i in range(len(s1)):
+                if len(s2)>i:
+                    numIdenticalCharsAtIdenticalPositions += (1 if s1[i]==s2[i] else 0)
+                else: break
+        else:
+            for i in range(len(s2)):
+                if len(s1)>i:
+                    numIdenticalCharsAtIdenticalPositions += (1 if s1[i]==s2[i] else 0)
+                else: break
+        proportion = (numIdenticalCharsAtIdenticalPositions / lenLongestStr)
+        return {"'average' charPositionDistance": proportion,
+                "numIdenticalCharsAtIdenticalPositions": numIdenticalCharsAtIdenticalPositions, "lenLongestStr": lenLongestStr}
+
+    def GetNearestMatchingCharDistance(input_string:str, diff_string:str, DISTANCE_IF_NO_MATCHING_CHAR:int) -> list:
+        """
+        Made by Claude (except the return statement) from prompt "Write a function that calculates the distance from each char in an input string to the nearest char in a different string
+          where that diff_string char has the same value as the char in the input string"
+    
+        For each char in input_string (at index i), finds the nearest index j in
+        diff_string where diff_string[j] == input_string[i], and returns |i - j|.
+        If no matching char exists anywhere in diff_string, that position is None.
+
+        Returns:
+        * integer sum of distances, where each distance of value `None` gets replaced with @param{DISTANCE_IF_NO_MATCHING_CHAR}
+        * list of (int or None), same length/order as input_string.
+        """
+        from bisect import bisect_left
+        from collections import defaultdict
+
+        # Build char -> sorted list of indices in diff_string
+        char_positions = defaultdict(list)
+        for j, ch in enumerate(diff_string):
+            char_positions[ch].append(j)
+        # (already sorted ascending since we appended in index order)
+
+        result = []
+        for i, ch in enumerate(input_string):
+            positions = char_positions.get(ch)
+            if not positions:
+                result.append(None)
+                continue
+
+            # Binary search for insertion point of i among positions
+            pos_idx = bisect_left(positions, i)
+
+            # Candidates are the neighbor just before and just after pos_idx
+            best = None
+            if pos_idx < len(positions):
+                best = abs(positions[pos_idx] - i)
+            if pos_idx > 0:
+                left_dist = abs(positions[pos_idx - 1] - i)
+                if best is None or left_dist < best:
+                    best = left_dist
+
+            result.append(best)
+
+        return sum([(distance if distance is not None else DISTANCE_IF_NO_MATCHING_CHAR) for distance in result]), result
+
+    DISTANCE_IF_NO_MATCHING_CHAR = 5
+    strLenDifference, dictPosn, listClosestTraversalDistances_NonPermutation, dictHistL2  =  abs(len(s1)-len(s2)), CompareCharsAtIdenticalPositions(s1,s2), GetNearestMatchingCharDistance(s1, s2, DISTANCE_IF_NO_MATCHING_CHAR), CompareHistToHistDistance(*histograms) # *var is unpacking operator
+    weight_strLenDiff, weight_dictIdenticalPosn, weight_listNearestPosn, weight_dictHistL2  =  weights
+    weightedDistance = weight_strLenDiff        * strLenDifference \
+                     + weight_dictIdenticalPosn * dictPosn["'average' charPositionDistance"] \
+                     + weight_listNearestPosn   * listClosestTraversalDistances_NonPermutation[0] \
+                     + weight_dictHistL2        * dictHistL2["proportional_summedMSE_val"]
+    weightedSimilarity = 1/(weightedDistance)   # Instead of small numbers implying "closer", now it intuitively has big number implying "closer"
+    info = f"Calculated closeness for \"{s1}\" and \"{s2}\": {weightedSimilarity:.4f}\n" \
+         + f"* (weight={weight_strLenDiff}) {strLenDifference}\n" \
+         + f"* (weight={weight_listNearestPosn}) {listClosestTraversalDistances_NonPermutation}\n" \
+         + f"* (weight={weight_dictIdenticalPosn}) {dictPosn}\n" \
+         + f"* (weight={weight_dictHistL2}) {dictHistL2}\n"
+    if doPrint: print(info)
+    return weightedSimilarity, dictPosn, weight_dictIdenticalPosn, listClosestTraversalDistances_NonPermutation, weight_listNearestPosn, dictHistL2, weight_dictHistL2, info
+
+
+def test_CalculateStringCloseness(SORT:bool):
+    from pprint import pprint
+    DO_PRINT = False
+    TEST_PAIRS = [("Hi!", "Hye!"), ("Hi!", "Hiya!"), ("Hi", "Hiya"),
+                  ("Hi!", "Hi!"), ("Hi!", "Hii!"), ("Hi!", "Hiii!"), ("Hii!", "Hiii!"),
+                  ("Hi", "8y9g38 hurpugb2 4tbkcj~_i"), ("Hi",  "i"*25), ("Hi",  "H"+"i"*24),
+                  ("Very Long String That Is Exact Same", "Very Long String That Is Exact Same")]
+    
+    # Each value is arbitrary. Higher number (weight) relative to the other weights means "more important than other weights".
+    # (weight_strLenDiff, weight_dictIdenticalPosn, weight_listNearestPosn, weight_dictHistL2)  =  0.5, 0.25, 0.5, .25
+    listWts = [(1,1,1,1), (0.5, 0.5, 0.5, 0.5), (0.5, 0.25, 0.5, .25)]
+    
+    closenesses = []
+    for (s1, s2) in TEST_PAIRS:
+        for wts4 in listWts:
+            closenesses.append( [float(format( calculate_string_closeness(s1, s2, wts4, doPrint=DO_PRINT)[0], ".4f")),   f"Weights={str(wts4):<22}",   s1,   s2] )
+        closenesses.append([])
+    
+    if SORT:
+        print("Sorted closeness values (higher value == more similar):")
+        pprint(sorted(closenesses, reverse=True))
     else:
-        for i in range(len(s2)):
-            if len(s1)>i:
-                numIdenticalCharsAtIdenticalPositions += (1 if s1[i]==s2[i] else 0)
-            else: break
+        print("Closeness values (higher value == more similar):")
+        pprint(closenesses)
+# test_CalculateStringCloseness(SORT=True)
 
 
-    return (numIdenticalCharsAtIdenticalPositions/lenLongestStr), histograms
 
 
 # =========================================================================
@@ -1611,6 +1802,7 @@ def decode_leet_with_trace(
     import time
     time_start = time.perf_counter()
     time_end = 0
+    print(f"[INFO]  Generating up to {format(max_results, ",")} candidate strings.")
     for combo in itertools.product(*options):
         # combo is a tuple of dictionaries representing the exact path taken
         candidate = "".join(step['plain'] for step in combo)
@@ -1620,9 +1812,9 @@ def decode_leet_with_trace(
             results.append((candidate, combo))
             numResultsSoFar = len(results)
             if (numResultsSoFar+1)%1000 == 0:
-                print(f"[INFO]  Computed {numResultsSoFar+1} candidate strings.")
+                print(f"[INFO]  Computed {format(numResultsSoFar+1, ",")} candidate strings.")
             if numResultsSoFar >= max_results:
-                print(f"[WARN] Threshold for `max_results` ({max_results}) was hit. Decode failed.")
+                print(f"\n[WARN] Threshold for `max_results` ({format(max_results, ",")}) was hit. Decode failed.\n")
                 break   # Exit the for loop (not just the if statements)
     time_end = time.perf_counter()
 
@@ -1633,14 +1825,7 @@ def decode_leet_with_trace(
 # SELF-TEST & TRACE VISUALIZATION
 # =========================================================================
 
-if __name__ == '__main__':
-    print("=" * 70)
-    print("STATISTICS")
-    print("=" * 70)
-    rolledup_stats, detailed_stats = get_statistics(truncate_long_examples_b4_printing=False)
-    print(detailed_stats)
-    print("\n")
-    
+def testStringSubstitutionsViaAllRulesets():
     TESTS = [
         ('basic digit sub',                     '1gn0r3',                                 'basic',    'ignore'),
         ('basic digit sub - partial encoding',  '1gnor3',                                 'basic',    'ignore'),
@@ -1683,9 +1868,11 @@ if __name__ == '__main__':
     print("DECODING TESTS")
     print("=" * 70)
 
-    MAX_NUM_CANDIDATES2PRINT = 3000
+    MAX_NUM_CANDIDATES2PRINT = 1_500
     MAX_NUM_CANDIDATES2GENERATE = 10_000    # Per input string, *not* per overall list of input strings.
     MAX_NUM_USED_RULES2PRINT = 250
+    PRINT_IDENTITY_TRANSFORMS, PRINT_RULES_INSTEAD_OF_SUBS = False, True
+    tests_passFail = []
     for desc, leet, tier, expected in TESTS:
         results, timeConsumed = decode_leet_with_trace(leet, tier=tier, max_results=MAX_NUM_CANDIDATES2GENERATE)
         
@@ -1701,28 +1888,46 @@ if __name__ == '__main__':
                 
         passed = success_combo is not None
         mark = '[ :) ]' if passed else '[ X ]'
+        tests_passFail.append(passed)    # E.g., [True, False, False, True, ...]
         
         print(f'{mark} [{tier:8}] {desc}')
         print(f'             Input:  {leet!r}')
         print(f'   Expected Output:  {expected!r}')
         print(f'  Converted Output:  {("\'"+("".join([charInfo["plain"] for charInfo in success_combo]))+"\'") if success_combo is not None   else "None (Conversion failed to produce a match)"}')
         print(f'\n  Time spent attempting to find output:  {timeConsumed:5f} seconds')
-        print(f'  Generated {len(results)} candidate string{"s" if len(results)!=1 else ""} while attempting to find the Expected Output string')
+        print(f'  Generated {format(len(results),",")} candidate string{"s" if len(results)!=1 else ""} while attempting to find the Expected Output string')
 
-        def printListOfRulesUsed(rules_used, conversion_succeeded:bool):
-            num_subs = len(rules_used)
-            plural_s = "s" if num_subs!=1  else ""
+        def printListOfRulesUsed(subs_used, conversion_succeeded:bool, PRINT_IDENTITY_TRANSFORMS:bool, PRINT_RULES_INSTEAD_OF_SUBS:bool):
+            rules_used = {}
+            for step in subs_used:
+                rules_used.update( {(step['raw'], step['plain']): 0} )
+            
+            num_subs, num_rules  =  len(subs_used), len(rules_used.keys())
+            plural_s_subs = "s" if num_subs!=1  else ""
+            plural_s_rules = "s" if num_rules!=1  else ""
+
+            # print("rules_used.keys():", rules_used.keys())  # DEBUG
 
             if conversion_succeeded:
-                print(f"  Used rule{plural_s} {num_subs} times during *successful* conversion of {leet!r} to {expected!r}:")
+                print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}) during *successful* conversion of {leet!r} to {expected!r}:")
             else:
-                print(f"  Used rule{plural_s} {num_subs} times during *failed* attempt at conversion of {leet!r} to {expected!r}:")
+                print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}) during *failed* attempt at conversion of {leet!r} to {expected!r}:")
             
             if num_subs > 0:
-                print(f"  Performed {num_subs} substitution{plural_s}{f" (only first {MAX_NUM_USED_RULES2PRINT} rules are shown)" if num_subs>MAX_NUM_USED_RULES2PRINT else ""}:")
-                for idx, step in enumerate(rules_used, 1):
-                    print(f"  {idx:4}) Matched {f"{step['raw']!r:8} -> {step['plain']!r:8}":20} [Source: {step['category']}]")
-                    if idx>MAX_NUM_USED_RULES2PRINT:
+                print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}){" during successful match" if conversion_succeeded else ""}{"" if PRINT_IDENTITY_TRANSFORMS else f" (only non-identity transformation {"rules" if PRINT_RULES_INSTEAD_OF_SUBS else "substitutions"} are shown)"}{f" (only first {format(MAX_NUM_USED_RULES2PRINT,",")} {"rules" if PRINT_RULES_INSTEAD_OF_SUBS else "substitutions"} are shown)" if (num_subs>MAX_NUM_USED_RULES2PRINT or num_rules>MAX_NUM_USED_RULES2PRINT) else ""}:")
+                idx_numRules = 1
+                for idx_numSubs, step in enumerate(subs_used, 1):
+                    isIdentityTransform = (step['raw'] == step['plain']) # Examples of IdentityTransform: "o"->"o", "7"->"7"
+                    ruleHasBeenUsedBefore = (False if 0 == rules_used.get( (step['raw'], step['plain']), 0 )  else True)
+                    # print("ruleHasBeenUsedBefore:", (False if 0 == rules_used.get( (step['raw'], step['plain']), 0 )  else True), (rules_used.get( (step['raw'], step['plain']), 0 )) )   # DEBUG
+                    if (PRINT_IDENTITY_TRANSFORMS and isIdentityTransform) or (not isIdentityTransform and PRINT_RULES_INSTEAD_OF_SUBS and not ruleHasBeenUsedBefore):
+                        print(f"  {format(idx_numRules,"4") if PRINT_RULES_INSTEAD_OF_SUBS else format(idx_numSubs,"4")}) Matched {f"{step['raw']!r:8} -> {step['plain']!r:8}":20} [Source: {step['category']}]")
+                        idx_numRules += 1
+
+                    priorNumTimesThisRuleWasUsed = rules_used.get((step['raw'], step['plain']), 0)
+                    rules_used.update( {(step['raw'], step['plain']): priorNumTimesThisRuleWasUsed+1} )
+
+                    if (not PRINT_RULES_INSTEAD_OF_SUBS and idx_numSubs>=MAX_NUM_USED_RULES2PRINT) or (PRINT_RULES_INSTEAD_OF_SUBS and idx_numRules>=MAX_NUM_USED_RULES2PRINT):
                         break
             else:
                 print("  No transformation rules applied (text was unmodified).")
@@ -1730,25 +1935,25 @@ if __name__ == '__main__':
         def printListOfCandidates(candidates):
             num_cand = len(candidates)
             if num_cand > 0:
-                print(f"  {num_cand} candidate strings generated{f" (only first {MAX_NUM_CANDIDATES2PRINT} candidates are shown)" if num_cand>MAX_NUM_CANDIDATES2PRINT else ""}:")
+                print(f"  {format(num_cand,",")} candidate strings generated{f" (only first {format(MAX_NUM_CANDIDATES2PRINT,",")} candidates are shown)" if num_cand>=MAX_NUM_CANDIDATES2PRINT else ""}:")
                 for idx, can in enumerate(candidates, 1):
                     print(f"  {idx:4}) {can:20}")
-                    if idx>MAX_NUM_CANDIDATES2PRINT:
+                    if idx>=MAX_NUM_CANDIDATES2PRINT:
                         break
             
         if success_combo:
             # Filter out characters that were completely untouched by the rules
-            rules_used = [step for step in success_combo  if step['category'] != 'Unmodified (Fallback)']    # Conditionally adds an element to the list.
-            printListOfRulesUsed(rules_used, True)
+            substitutions_used = [step for step in success_combo  if step['category'] != 'Unmodified (Fallback)']    # Conditionally adds an element to the list.
+            printListOfRulesUsed(substitutions_used, True, PRINT_IDENTITY_TRANSFORMS, PRINT_RULES_INSTEAD_OF_SUBS)
         else:
-            print("  [ERROR] Could not generate expected string within max_results limit or missing rules.")
+            print("  [ERROR] Could not generate expected string within max_results limit or missing rules.\n")
             all_passed = False
             
-            rules_used = [[step for step in combo  if step['category'] != 'Unmodified (Fallback)']   for combo in combos_attempted]
+            substitutions_used = [[step for step in combo  if step['category'] != 'Unmodified (Fallback)']   for combo in combos_attempted]
             tmp = []
-            [tmp.extend(r) for r in rules_used] # Flatten list by one level
-            # print("\n\nrules_used:", tmp) # DEBUG
-            printListOfRulesUsed(tmp, False)
+            [tmp.extend(r) for r in substitutions_used] # Flatten list by one level
+            # print("\n\nsubstitutions_used:", tmp) # DEBUG
+            printListOfRulesUsed(tmp, False, PRINT_IDENTITY_TRANSFORMS, PRINT_RULES_INSTEAD_OF_SUBS)
 
             printListOfCandidates(candidates)
 
@@ -1756,4 +1961,25 @@ if __name__ == '__main__':
             
         print("-" * 50)
 
-    print('All tests passed.\n' if all_passed else 'SOME TESTS FAILED. (Consider increasing `max_results` or checking rulesets)\n')
+    numTestsPassed = sum([1 for t in tests_passFail if t])
+    numTestsFailed = len(tests_passFail) - numTestsPassed
+    testFailureRate = (100*numTestsFailed)//len(tests_passFail) # Percentage like 42%, no values to right of radix point
+    print('All tests passed.\n' if all_passed else f'{numTestsFailed}/{len(tests_passFail)} ({format(testFailureRate,"2") if testFailureRate!=100 else "100"}%) TESTS FAILED. (Consider increasing `max_results` or checking rulesets)\n')
+
+
+if __name__ == '__main__':
+    print("=" * 70)
+    print("STATISTICS")
+    print("=" * 70)
+    rolledup_stats, detailed_stats = get_statistics(truncate_long_examples_b4_printing=False)
+    print(detailed_stats)
+    print("\n")
+
+    NonHumanReadableEncodings().test_ConvertTokenFromBase_X()
+    test_reverse_tokens()
+    # test_MirrorReverseTokens(allowPartialMirroring=True, printOneTokenPerLine=False, printTransformations=False)
+
+    test_CalculateStringCloseness(SORT=False)
+    # test_CalculateStringCloseness(SORT=True)
+
+    testStringSubstitutionsViaAllRulesets()
