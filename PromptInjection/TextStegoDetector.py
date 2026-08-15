@@ -11,7 +11,7 @@ https://en.wikipedia.org/wiki/Leet#Haxor_and_suxxor_(suxorz)
 https://en.wikipedia.org/wiki/SMS_language#SMS_dictionaries
 
 
-Prompt to LLM:
+Prompt to LLM to help create this:
 {
 I am trying to improve the extremely minimal LeetSpeak detection and conversion code present in https://github.com/seojoonkim/prompt-guard/blob/main/prompt_guard/patterns.py, which contains only:
 
@@ -39,6 +39,16 @@ Account for smarter tricks like inverting the direction of already-leeted charac
 When giving me the modified code file, tell me exactly what changes you made, and what is still lacking *after* your most recent changes.
 }
 """
+
+
+
+def wrapInHeader(header:str) -> str:
+    l = max(len(header), 70)
+    return ("\n"+("=" * l)+"\n" + header + "\n"+("=" * l)+"\n")
+
+
+
+
 
 import itertools
 from collections import defaultdict
@@ -202,6 +212,60 @@ class NonHumanReadableEncodings():
 
 
 
+    def fromStrOfASCIIints_toPlainStr(self, intEncodedStr:str, includeTypeOfFailedConversion:bool = True):
+        """
+        Example:
+        "70,,,,71,   ,,72"  ->  [70, 71, 72]  ->  ["F", "G", "H"]  ->  "FGH"
+        """
+        listASCIIcharIndices = []
+        for itemStr in intEncodedStr.split(" "):
+            if itemStr != "":
+                charList = itemStr.split(",")
+                for c in charList:
+                    if c != "":
+                        listASCIIcharIndices.append(c)
+        
+        listChars = []
+        for ascii_index in listASCIIcharIndices:
+            try:
+                idx = int(ascii_index)
+                isUppercase = 65<=idx<=90
+                isLowercase = 97<=idx<=122
+                if (isUppercase or isLowercase):
+                    c = chr(idx)   # DOES NOT ONLY CONVERT ASCII, HENCE ABOVE IF STATEMENT.
+                else:
+                    # Non-ASCII encoded character, or just a non-printable ASCII encoded character
+                    isRegAscii      =  (0<=idx<=127)
+                    isExtendedAscii = ((0<=idx<=255) and (not isRegAscii))  # Latter part is only to avoid overlapping print info, not a fundamental truth
+                    isNonAscii      = (not isRegAscii) and (not isExtendedAscii)
+                    tagIsPresent    = (isRegAscii or isExtendedAscii or isNonAscii)
+                    if includeTypeOfFailedConversion:
+                        tags = ("[RegularAsc]" if isRegAscii else "")+("[ExtnddAsc]" if isExtendedAscii else "")+("[nonAsc]" if isNonAscii else "")
+                        c = "{"+(" " if tagIsPresent else "") + tags + ascii_index + (" " if tagIsPresent else "")+"}"
+                    else:
+                        c = "{"+ascii_index+"}"
+            except:
+                # Non-ASCII encoded character
+                print("[WARN] Encountered Non-ASCII encoded character")
+                if includeTypeOfFailedConversion:
+                    c = "{[nonAsc]"+str(ascii_index)+"}"    # Should already be a string, but just in case, cast it to a string.
+                    # Notice how there's no space between { and the tag. That's what makes it identifiable as a fully-failed conversion.
+                else:
+                    c = "{"+str(ascii_index)+"}"
+            listChars.append(c)
+        
+        return "".join(listChars)
+
+    def test_fromStrOfASCIIints_toPlainStr(self):
+        encodedStrToTest = "65,70,,,,71,   ,,72,90 97,122,127, 128 129 255   256 , , , 893"
+
+        expectedDecodedStr = ["AFGHZaz{127}{128}{129}{255}{256}{893}"]
+        expectedDecodedStr.append("AFGHZaz{ [RegularAsc]127 }{ [ExtnddAsc]128 }{ [ExtnddAsc]129 }{ [ExtnddAsc]255 }{ [nonAsc]256 }{ [nonAsc]893 }")
+
+        for idx, boolean in enumerate([False, True]):
+            decodedResult = self.fromStrOfASCIIints_toPlainStr(intEncodedStr=encodedStrToTest, includeTypeOfFailedConversion=boolean)
+            print(f"Encoded: \"{encodedStrToTest}\"\nDecoded: \"{decodedResult}\"\n")
+            assert decodedResult == expectedDecodedStr[idx], "Value of decoded string was unexpected."
 
     # TODO
     def flip_endianness_hexstring(self):
@@ -217,10 +281,22 @@ class NonHumanReadableEncodings():
         # "123456789aBCdeF0"                               -> "21436587a9CBed0F"
         raise NotImplementedError()
 
-    # TODO
-    def typo_bigram(self):
+
+
+class HumanReadableEncodings():
+    def typo_bigram(self, s):
         # confsued -> [ocnfsued (01), cnofsued (12), cofnsued (23), consfued (34), confused (45), confseud (56), confsued (67)]
-        raise NotImplementedError()
+        pairs_elementIndices= [range(x,x+2) for x in range(len(s))] # [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], ...]
+        list_swappedNeighbors = []
+        for leftIdx, rightIdx in pairs_elementIndices:
+            if (len(s)>0) and (leftIdx >= 0) and (rightIdx < len(s)):
+                modifiedStr = s[:leftIdx] + (s[rightIdx]+s[leftIdx]) + s[rightIdx+1:]   # list[inclusiveLowerIndex : exclusiveUpperIndex]
+                list_swappedNeighbors.append(modifiedStr)
+        return list_swappedNeighbors
+
+    def test_typo_bigram(self):
+        print( self.typo_bigram("Hello there!") )
+
 
     # TODO
     def circularShiftTokens(self, tokens: list[str], shift_amts_per_token: list[int]):
@@ -231,7 +307,7 @@ class NonHumanReadableEncodings():
         raise NotImplementedError()
 
 
-class HumanReadableEncodings():
+    
     # ---------------------------------------------------------------------
     # ARBITRARY-GAP GENERATOR
     # ---------------------------------------------------------------------
@@ -657,12 +733,12 @@ ADVANCED_PAIRS_PHONETIC: list[tuple[str, set[str]]] = [
     ('ecks', {'x'}), 
     ('ee',   {'ee', 'y'}),              # dizzee -> dizzy
     ('y',    {'ee', 'y'}),              # creepee -> creepy
-    ('oo',   {'oo', 'ew', 'ue'}),       # floo -> flew
-    ('ew',   {'oo', 'ew', 'ue'}),       # rewt -> root, crewk -> crook
-    ('ue',   {'oo', 'ew', 'ue'}),       # flue -> flew, shuet -> shoot
-    ('uh',   {'or', 'a', 'h', 'uh'}),   # fuhget  -> forget
-    ('ah',   {'e',  'a', 'h', 'ah'}),   # hahcker -> hacker
-    ('eh',   {'e',  'a', 'h', 'eh'}),   # forgeht -> forget, hehcker -> hacker
+    ('ue',   {'oo', 'ew', 'ue'}),            # flue -> flew, shuet -> shoot
+    ('oo',   {'oo', 'o', 'ew', 'ue'}),       # floo -> flew
+    ('ew',   {'oo', 'o', 'ew', 'ue'}),       # rewt -> root, crewk -> crook
+    ('uh',   {'or', 'o', 'a', 'h', 'uh'}),   # fuhget  -> forget
+    ('ah',   {'e',  'o', 'a', 'h', 'ah'}),   # hahcker -> hacker
+    ('eh',   {'e',  'o', 'a', 'h', 'eh'}),   # forgeht -> forget, hehcker -> hacker
     ('oh',   {'or', 'o', 'h', 'oh'}),   # fohget  -> forget
     ('oe',   {'or', 'o', 'h', 'oh', 'ow', 'oe'}),   # foeget  -> forget, tomorroe -> tomorrow
     ('xor',  {'cker', 'ckor', 'xor'}), 
@@ -1389,6 +1465,11 @@ WORD_PAIRS_CASUAL: list[tuple[str, set[str], str]] = [
 ]
 
 
+# TODO
+# Add more domain-specific categories of shorthand  (e.g., lexicons for doctors, chemists, computer scientists, courtroom stenographers, blue-collar fields (like construction, carpentry, road-workers, tilers, "finish"ers, fishers), geographic region slang)
+# Add different languages (e.g., French, Spanish, Swedish, Chinese)
+# Add multi-language-in-single-string (e.g., Spanglish, "how are tu doing", "como you?")
+
 
 
 #####
@@ -1864,17 +1945,17 @@ def testStringSubstitutionsViaAllRulesets():
     ]
 
     all_passed = True
-    print("=" * 70)
-    print("DECODING TESTS")
-    print("=" * 70)
+    print( wrapInHeader("DECODING TESTS") )
 
     MAX_NUM_CANDIDATES2PRINT = 1_500
     MAX_NUM_CANDIDATES2GENERATE = 10_000    # Per input string, *not* per overall list of input strings.
     MAX_NUM_USED_RULES2PRINT = 250
     PRINT_IDENTITY_TRANSFORMS, PRINT_RULES_INSTEAD_OF_SUBS = False, True
-    tests_passFail = []
+    # TODO: Add statistics for average, median, standard deviation, max, min times for matching a string to any existing rule.
+    tests_passFail, tests_timeConsumed  =  [], []
     for desc, leet, tier, expected in TESTS:
         results, timeConsumed = decode_leet_with_trace(leet, tier=tier, max_results=MAX_NUM_CANDIDATES2GENERATE)
+        tests_timeConsumed.append(timeConsumed)
         
         # Hunt down the specific trace that successfully formed the expected string
         success_combo = None
@@ -1908,10 +1989,8 @@ def testStringSubstitutionsViaAllRulesets():
 
             # print("rules_used.keys():", rules_used.keys())  # DEBUG
 
-            if conversion_succeeded:
-                print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}) during *successful* conversion of {leet!r} to {expected!r}:")
-            else:
-                print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}) during *failed* attempt at conversion of {leet!r} to {expected!r}:")
+            str_conv_succeeded = "*successful*" if conversion_succeeded   else "*failed* attempt at"
+            print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}) during {str_conv_succeeded} conversion of {leet!r} to {expected!r}:")
             
             if num_subs > 0:
                 print(f"  Used {num_rules} rule{plural_s_rules} (and {format(num_subs,",")} substitution{plural_s_subs}){" during successful match" if conversion_succeeded else ""}{"" if PRINT_IDENTITY_TRANSFORMS else f" (only non-identity transformation {"rules" if PRINT_RULES_INSTEAD_OF_SUBS else "substitutions"} are shown)"}{f" (only first {format(MAX_NUM_USED_RULES2PRINT,",")} {"rules" if PRINT_RULES_INSTEAD_OF_SUBS else "substitutions"} are shown)" if (num_subs>MAX_NUM_USED_RULES2PRINT or num_rules>MAX_NUM_USED_RULES2PRINT) else ""}:")
@@ -1956,30 +2035,70 @@ def testStringSubstitutionsViaAllRulesets():
             printListOfRulesUsed(tmp, False, PRINT_IDENTITY_TRANSFORMS, PRINT_RULES_INSTEAD_OF_SUBS)
 
             printListOfCandidates(candidates)
-
-
             
         print("-" * 50)
 
-    numTestsPassed = sum([1 for t in tests_passFail if t])
-    numTestsFailed = len(tests_passFail) - numTestsPassed
-    testFailureRate = (100*numTestsFailed)//len(tests_passFail) # Percentage like 42%, no values to right of radix point
-    print('All tests passed.\n' if all_passed else f'{numTestsFailed}/{len(tests_passFail)} ({format(testFailureRate,"2") if testFailureRate!=100 else "100"}%) TESTS FAILED. (Consider increasing `max_results` or checking rulesets)\n')
+
+    def calculateTestingStats(all_passed, tests_timeConsumed):
+        import numpy as np
+
+        numTestsPassed = sum([1 for t in tests_passFail if t])
+        numTestsFailed = len(tests_passFail) - numTestsPassed
+        testFailureRate = (100*numTestsFailed)//len(tests_passFail) # Percentage like 42%, no values to right of radix point
+        if all_passed:
+            testPassFailStats = 'All string conversion&matching tests passed.'
+        else:
+            testPassFailStats = f'{numTestsFailed}/{len(tests_passFail)} ({format(testFailureRate,"2") if testFailureRate!=100 else "100"}%) of string conversion&matching tests FAILED. (Consider increasing `max_results` or checking rulesets)'
+        print(wrapInHeader(testPassFailStats))
+
+        max_execution_time, min_execution_time = ("MAX", format(max(tests_timeConsumed), ".6f")), ("MIN", format(min(tests_timeConsumed), ".6f"))
+        # [1, 5, 10] -> [10,5,1][3//2] -> [10,5,1][1] -> 5
+        # [1, 5, 7, 10] -> [10,7,5,1][4//2] -> [10,7,5,1][2] -> 5       # Mathematically this should be the average of the two middle-most #s (i.e., should be (7+5)//2 = 6), but I don't really care tbh.
+        median_execution_time = ("MEDIAN*", format(sorted(tests_timeConsumed)[ len(tests_timeConsumed)//2 ], ".6f"))
+        stdev_execution_time = ("STANDARD DEVIATION", format(np.std(tests_timeConsumed), ".6f"))
+        testExecutionTimeStats = [max_execution_time, min_execution_time, median_execution_time, stdev_execution_time]
+        print(wrapInHeader("Execution time (of string conversion&matching tests) statistics"))
+        [print(f"* {key}: {val} seconds") for (key, val) in testExecutionTimeStats]
+    calculateTestingStats(all_passed, tests_timeConsumed)
+
+
+
 
 
 if __name__ == '__main__':
-    print("=" * 70)
-    print("STATISTICS")
-    print("=" * 70)
-    rolledup_stats, detailed_stats = get_statistics(truncate_long_examples_b4_printing=False)
-    print(detailed_stats)
-    print("\n")
-
-    NonHumanReadableEncodings().test_ConvertTokenFromBase_X()
-    test_reverse_tokens()
-    # test_MirrorReverseTokens(allowPartialMirroring=True, printOneTokenPerLine=False, printTransformations=False)
-
-    test_CalculateStringCloseness(SORT=False)
-    # test_CalculateStringCloseness(SORT=True)
-
+    # TIME INTENSIVE, EXTREMELY NUM_OUTPUT_LINES INTENSIVE
+    print( wrapInHeader(wrapInHeader("testStringSubstitutionsViaAllRulesets()") ))
     testStringSubstitutionsViaAllRulesets()
+
+    print( wrapInHeader("STATISTICS OF RULESETS") )
+    rolledup_stats, detailed_stats = get_statistics(truncate_long_examples_b4_printing=False)
+    print(detailed_stats+"\n\n")
+
+
+    print( wrapInHeader("HumanReadableEncodings().test_typo_bigram()") )
+    HumanReadableEncodings().test_typo_bigram()
+
+    print( wrapInHeader("NonHumanReadableEncodings().test_ConvertTokenFromBase_X()") )
+    NonHumanReadableEncodings().test_ConvertTokenFromBase_X()
+    
+    print( wrapInHeader("test_reverse_tokens()") )
+    test_reverse_tokens()
+
+    print( wrapInHeader("test_CalculateStringCloseness(SORT=False)") )
+    test_CalculateStringCloseness(SORT=False)
+
+    print( wrapInHeader("test_CalculateStringCloseness(SORT=True)") )
+    test_CalculateStringCloseness(SORT=True)
+
+    print( wrapInHeader("test_MirrorReverseTokens(allowPartialMirroring=True, printOneTokenPerLine=False, printTransformations=False)") )
+    test_MirrorReverseTokens(allowPartialMirroring=True, printOneTokenPerLine=False, printTransformations=False)
+
+    print( wrapInHeader("NonHumanReadableEncodings().test_fromStrOfASCIIints_toPlainStr()") )
+    NonHumanReadableEncodings().test_fromStrOfASCIIints_toPlainStr()
+
+
+# Current Limitations:
+#  * Some rules override other rules (non-input-preserving/"consumption" rules)(e.g., |) -> |( -> K instead of |) -> D),
+#  * Not enough sets/categories of rules to cover edge cases (e.g., typos)
+#  * Only covers English-centric prompt injections, not other languages like French, Spanish, nor language-mixture (e.g., Spanglish, "I no gusta that")
+#  * Does not implement rule-into-rule substitution at all (broader coverage)
