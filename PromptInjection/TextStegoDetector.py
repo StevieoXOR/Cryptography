@@ -1475,6 +1475,8 @@ WORD_PAIRS_CASUAL: list[tuple[str, set[str], str]] = [
     ('whatcha',{'what are you'},     'Casual'),
     ('whachu', {'what are you'},     'Casual'),
     ('whacha', {'what are you'},     'Casual'),
+    ('whachyu',{'what are you'},     'Casual'),
+    ('whachya',{'what are you'},     'Casual'),
     ('whaddya',{'what are you'},     'Casual'),
     ('whadya', {'what are you'},     'Casual'),
     ('whodya', {'who do you'},       'Casual'),
