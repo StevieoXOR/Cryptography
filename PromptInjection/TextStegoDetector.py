@@ -280,6 +280,14 @@ class NonHumanReadableEncodings():
         # [0x12, 0x34, 0x56, 0x78, 0x9a, 0xBC, 0xde, 0xF0] -> [0x21, 0x43, 0x65, 0x87, 0xa9, 0xCB, 0xed, 0x0F],    or
         # "123456789aBCdeF0"                               -> "21436587a9CBed0F"
         raise NotImplementedError()
+    
+    # TODO
+    def swap_charPairNeighbors(self):
+        # reversed-char-pair -> erevsrdec-ah-rapri
+        # re ve rs ed -c ha r- pa ir  ->  er ev sr de c- ah -r ap ri
+        raise NotImplementedError()
+
+
 
 
 
@@ -379,11 +387,12 @@ def reverse_tokens(tokens: list) -> list:
 
 def test_reverse_tokens():
     print("TESTING FUNCTION reverse_tokens")
-    tokens_input = ["12345", "6789"]
-    tokens_expected = ["54321", "9876"]
+    tokens_input    = ["12345", "6789", "reversed-string", "reversed string"]
+    tokens_expected = ["54321", "9876", "gnirts-desrever", "gnirts desrever"]
     print(f"  Expected: reverse_tokens({tokens_input}) -> {tokens_expected}.\n  Received {reverse_tokens(tokens_input)}.")
     print(f"  * Test passed." if (tokens_expected == reverse_tokens(tokens_input)) else "  /!\\/!\\/!\\\n  Test FAILED.\n  /!\\/!\\/!\\", end="\n\n")
 # test_reverse_tokens()
+
 
 
 
@@ -1434,12 +1443,6 @@ WORD_PAIRS_CASUAL: list[tuple[str, set[str], str]] = [
     ('leetle', {'little'},           'Casual'),      
     ('teh',    {'the'},              'Casual'),       
     ('tht',    {'that'},             'Casual'),      
-    ('wudda',  {'what the', 'water'},'Casual'),      
-    ('wadda',  {'what the', 'water'},'Casual'),      
-    ('vadda',  {'what the', 'water'},'Casual'),      
-    ('whudda', {'what the'},         'Casual'),      
-    ('whadda', {'what the'},         'Casual'),      
-    ('wut',    {'what'},             'Casual'),      
     ('w/out',  {'without'},          'Casual'),   
     ('ur',     {'your', 'you are'},  'Casual'),  
     ('r u',    {'are you'},          'Casual'),   
@@ -1455,20 +1458,48 @@ WORD_PAIRS_CASUAL: list[tuple[str, set[str], str]] = [
     ('min',    {'minute', 'minimum'},'Casual'),
     ('nomo',   {'no more'},          'Casual'),
     ('num',    {'number'},           'Casual'),
-    ('no',     {'number'},           'Casual'),
-    ('no.',    {'number'},           'Casual'),
+    ('no',     {'number'},           'Casual'), # Relies on capitalization being ignored.
+    ('no.',    {'number'},           'Casual'), # Relies on capitalization being ignored.
     ('skool',  {'school'},           'Casual'),   
     ('unalive',{'kill', 'suicide'},  'Casual'),
     ('wikd',   {'wicked'},           'Casual'),
     ('weewoo', {'police'},           'Casual'), # Sound of police sirens
+    ('wudda',  {'what the', 'water'},'Casual'),      
+    ('wadda',  {'what the', 'water'},'Casual'),      
+    ('vadda',  {'what the', 'water'},'Casual'),      
+    ('whudda', {'what the'},         'Casual'),      
+    ('whadda', {'what the'},         'Casual'),      
+    ('whoda',  {'who the', 'who in the'},  'Casual'),      
+    ('wut',    {'what'},             'Casual'),      
     ('whatchu',{'what are you'},     'Casual'),
+    ('whatcha',{'what are you'},     'Casual'),
+    ('whachu', {'what are you'},     'Casual'),
+    ('whacha', {'what are you'},     'Casual'),
+    ('whaddya',{'what are you'},     'Casual'),
+    ('whadya', {'what are you'},     'Casual'),
+    ('whodya', {'who do you'},       'Casual'),
+    ('hoodya', {'who do you'},       'Casual'),
+    ('howya',  {'how are you'},      'Casual'),
+    ('doin',   {'doing'},            'Casual'), # TODO: Add function that cuts off the last letter of a word
+    ('doin\'', {'doing'},            'Casual'),
 ]
 
 
+
+
+
+######
 # TODO
+######
 # Add more domain-specific categories of shorthand  (e.g., lexicons for doctors, chemists, computer scientists, courtroom stenographers, blue-collar fields (like construction, carpentry, road-workers, tilers, "finish"ers, fishers), geographic region slang)
 # Add different languages (e.g., French, Spanish, Swedish, Chinese)
 # Add multi-language-in-single-string (e.g., Spanglish, "how are tu doing", "como you?")
+
+
+
+
+
+
 
 
 
